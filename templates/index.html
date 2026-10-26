@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Phân Tích Cảm Xúc Tiếng Việt - BiLSTM Attention vs PhoBERT</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            background-color: #f4f6f9;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: #333;
+        }
+        .header-box {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+            padding: 35px 20px;
+            border-radius: 0 0 20px 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+        }
+        .card-custom {
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.06);
+            background: white;
+            transition: transform 0.2s;
+        }
+        .token-chip {
+            display: inline-block;
+            padding: 6px 12px;
+            margin: 4px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 1px solid rgba(0,0,0,0.08);
+        }
+        .token-chip:hover {
+            transform: scale(1.1);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        }
+        .badge-pos { background-color: #28a745; color: white; }
+        .badge-neg { background-color: #dc3545; color: white; }
+        .badge-neu { background-color: #6c757d; color: white; }
+        .sample-btn {
+            font-size: 0.85rem;
+            margin: 3px;
+            border-radius: 20px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="header-box text-center">
+    <h2 class="fw-bold"><i class="fa-solid fa-brain me-2"></i>Phân Tích Cảm Xúc Tiếng Việt</h2>
+    <p class="mb-0 opacity-75">So sánh thực nghiệm: <strong>BiLSTM + Attention</strong> vs <strong>PhoBERT (vinai/phobert-base-v2)</strong> trên ngữ liệu UIT-VSFC</p>
+</div>
+
+<div class="container pb-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-9">
+            <!-- Form Input -->
+            <div class="card card-custom p-4 mb-4">
+                <h5 class="fw-bold mb-3"><i class="fa-solid fa-comment-dots text-primary me-2"></i>Nhập phản hồi sinh viên cần phân tích:</h5>
+                <form id="sentimentForm">
+                    <div class="mb-3">
+                        <textarea class="form-control" id="feedbackText" rows="3" placeholder="Nhập bình luận hoặc nhận xét của sinh viên (Ví dụ: Thầy dạy rất nhiệt tình, giảng bài dễ hiểu...)" required></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <small class="text-muted d-block mb-2"><strong>Câu mẫu thử nhanh:</strong></small>
+                        <button type="button" class="btn btn-outline-success sample-btn" onclick="setSample('thầy dạy rất nhiệt tình và giải đáp thắc mắc cho sinh viên rất chu đáo')">Khen ngợi (Tích cực)</button>
+                        <button type="button" class="btn btn-outline-danger sample-btn" onclick="setSample('slide bài giảng sơ sài khó hiểu , không có ví dụ thực tế gì cả')">Phàn nàn (Tiêu cực)</button>
+                        <button type="button" class="btn btn-outline-warning sample-btn" onclick="setSample('giảng viên dạy hay nhưng bài tập về nhà quá nhiều và khó')">Tương phản (Nhưng...)</button>
+                        <button type="button" class="btn btn-outline-secondary sample-btn" onclick="setSample('lớp học diễn ra đúng thời gian theo lịch của trường')">Thông tin (Trung tính)</button>
+                    </div>
+                    <button type="submit" class="btn btn-primary px-4 py-2 fw-bold" id="submitBtn">
+                        <i class="fa-solid fa-magnifying-glass-chart me-2"></i>Phân Tích Cảm Xúc
+                    </button>
+                </form>
+            </div>
+
+            <!-- Loading Spinner -->
+            <div id="loading" class="text-center py-4 d-none">
+                <div class="spinner-border text-primary" role="status"></div>
+                <p class="mt-2 text-muted fw-semibold">Đang suy luận qua hai mô hình...</p>
+            </div>
+
+            <!-- Results Section -->
+            <div id="results" class="d-none">
+                <!-- Attention Highlight Card -->
+                <div class="card card-custom p-4 mb-4">
+                    <h5 class="fw-bold mb-3">
+                        <i class="fa-solid fa-fire text-danger me-2"></i>Trực Quan Hóa Cơ Chế Chú Ý (BiLSTM Attention Heatmap)
+                    </h5>
+                    <p class="small text-muted mb-3">
+                        Các từ có màu cam đậm hơn biểu thị mô hình đang dồn trọng số chú ý ($\alpha_t$) lớn hơn để quyết định cảm xúc. Rê chuột vào từng từ để xem tỷ lệ phần trăm chính xác:
+                    </p>
+                    <div id="attentionTokens" class="p-3 bg-light rounded-3 mb-3"></div>
+                    <div id="topAttended" class="small fw-semibold text-secondary"></div>
+                </div>
+
+                <!-- Side by side comparison -->
+                <div class="row">
+                    <!-- BiLSTM Card -->
+                    <div class="col-md-6 mb-4">
+                        <div class="card card-custom h-100 p-4 border-top border-4 border-primary">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h5 class="fw-bold mb-0 text-primary">BiLSTM + Attention</h5>
+                                <span id="bilstmBadge" class="badge px-3 py-2 fs-6"></span>
+                            </div>
+                            <p class="small text-muted mb-2">Độ tin cậy: <strong id="bilstmConfidence" class="text-dark"></strong></p>
+                            <div class="progress mb-4" style="height: 10px;">
+                                <div id="bilstmProgressBar" class="progress-bar bg-primary" role="progressbar" style="width: 0%"></div>
+                            </div>
+                            <h6 class="small fw-bold text-muted mb-2">Phân phối xác suất 3 nhãn:</h6>
+                            <div id="bilstmProbabilities"></div>
+                            <hr>
+                            <div class="small text-muted">
+                                <div><i class="fa-solid fa-bolt me-1 text-warning"></i> Độ trễ: <strong>~1.8 ms</strong> (Rất nhanh)</div>
+                                <div><i class="fa-solid fa-microchip me-1 text-info"></i> Dung lượng: <strong>11 MB</strong> (972K params)</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- PhoBERT Card -->
+                    <div class="col-md-6 mb-4">
+                        <div class="card card-custom h-100 p-4 border-top border-4 border-success">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h5 class="fw-bold mb-0 text-success">PhoBERT-base v2</h5>
+                                <span id="phobertBadge" class="badge px-3 py-2 fs-6"></span>
+                            </div>
+                            <p class="small text-muted mb-2">Độ tin cậy: <strong id="phobertConfidence" class="text-dark"></strong></p>
+                            <div class="progress mb-4" style="height: 10px;">
+                                <div id="phobertProgressBar" class="progress-bar bg-success" role="progressbar" style="width: 0%"></div>
+                            </div>
+                            <h6 class="small fw-bold text-muted mb-2">Phân phối xác suất 3 nhãn:</h6>
+                            <div id="phobertProbabilities"></div>
+                            <hr>
+                            <div class="small text-muted">
+                                <div><i class="fa-solid fa-clock me-1 text-secondary"></i> Độ trễ: <strong>~43 ms</strong> (Transformer)</div>
+                                <div><i class="fa-solid fa-database me-1 text-info"></i> Dung lượng: <strong>515 MB</strong> (135M params)</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function setSample(text) {
+    document.getElementById('feedbackText').value = text;
+    document.getElementById('sentimentForm').dispatchEvent(new Event('submit'));
+}
+
+document.getElementById('sentimentForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    const text = document.getElementById('feedbackText').value.trim();
+    if (!text) return;
+
+    document.getElementById('loading').classList.remove('d-none');
+    document.getElementById('results').classList.add('d-none');
+
+    try {
+        const response = await fetch('/api/predict', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({text: text})
+        });
+        const data = await response.json();
+        renderResults(data);
+    } catch (err) {
+        alert('Có lỗi xảy ra khi dự đoán: ' + err);
+    } finally {
+        document.getElementById('loading').classList.add('d-none');
+    }
+});
+
+function renderResults(data) {
+    document.getElementById('results').classList.remove('d-none');
+
+    // Render Attention Tokens
+    const b = data.bilstm;
+    const tokensContainer = document.getElementById('attentionTokens');
+    tokensContainer.innerHTML = '';
+
+    if (b && b.token_attention) {
+        // Tìm trọng số max để chuẩn hóa màu
+        const weights = b.token_attention.map(x => x[1]);
+        const maxW = Math.max(...weights, 0.0001);
+
+        b.token_attention.forEach(([token, weight]) => {
+            const chip = document.createElement('span');
+            chip.className = 'token-chip';
+            const intensity = Math.min(weight / maxW, 1.0);
+            chip.style.backgroundColor = `rgba(230, 81, 0, ${0.15 + intensity * 0.75})`;
+            chip.style.color = intensity > 0.6 ? '#ffffff' : '#222222';
+            chip.title = `Từ: "${token}" - Trọng số Attention: ${(weight * 100).toFixed(1)}%`;
+            chip.innerHTML = `${token} <small style="font-size:0.75em; opacity:0.85;">(${(weight * 100).toFixed(0)}%)</small>`;
+            tokensContainer.appendChild(chip);
+        });
+
+        // Top attended
+        const topWords = b.top_attended_words.map(x => `<strong>'${x[0]}'</strong> (${(x[1]*100).toFixed(1)}%)`).join(', ');
+        document.getElementById('topAttended').innerHTML = `Từ khóa ảnh hưởng nhất: ${topWords}`;
+    }
+
+    // Render BiLSTM
+    renderModelCard('bilstm', data.bilstm);
+
+    // Render PhoBERT
+    renderModelCard('phobert', data.phobert);
+}
+
+function renderModelCard(prefix, modelData) {
+    if (!modelData) return;
+    const badge = document.getElementById(`${prefix}Badge`);
+    badge.innerText = modelData.prediction_vi.toUpperCase();
+    badge.className = 'badge px-3 py-2 fs-6';
+    if (modelData.prediction === 'positive') badge.classList.add('badge-pos');
+    else if (modelData.prediction === 'negative') badge.classList.add('badge-neg');
+    else badge.classList.add('badge-neu');
+
+    document.getElementById(`${prefix}Confidence`).innerText = (modelData.confidence * 100).toFixed(1) + '%';
+    document.getElementById(`${prefix}ProgressBar`).style.width = (modelData.confidence * 100).toFixed(1) + '%';
+
+    const probDiv = document.getElementById(`${prefix}Probabilities`);
+    probDiv.innerHTML = '';
+    const labelsMap = {
+        'positive': {name: 'Tích cực', color: 'bg-success'},
+        'negative': {name: 'Tiêu cực', color: 'bg-danger'},
+        'neutral': {name: 'Trung tính', color: 'bg-secondary'}
+    };
+
+    for (const [lbl, prob] of Object.entries(modelData.probabilities)) {
+        const info = labelsMap[lbl];
+        const pct = (prob * 100).toFixed(1);
+        probDiv.innerHTML += `
+            <div class="d-flex justify-content-between small mb-1">
+                <span>${info.name}</span>
+                <span class="fw-bold">${pct}%</span>
+            </div>
+            <div class="progress mb-2" style="height: 6px;">
+                <div class="progress-bar ${info.color}" style="width: ${pct}%"></div>
+            </div>
+        `;
+    }
+}
+</script>
+</body>
+</html>

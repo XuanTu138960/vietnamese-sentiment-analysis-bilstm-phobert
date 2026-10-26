@@ -8,6 +8,8 @@
 
 Nghiên cứu và so sánh thực nghiệm toàn diện giữa mô hình mạng hồi quy hai chiều có cơ chế tự chú ý (**BiLSTM + Additive Attention**) và mô hình ngôn ngữ ngữ cảnh tiền huấn luyện (**PhoBERT** - `vinai/phobert-base-v2`) trên tập ngữ liệu phản hồi của sinh viên **UIT-VSFC** (Vietnamese Students' Feedback Corpus).
 
+Dự án cung cấp trọn gói từ khâu tiền xử lý tiếng Việt, huấn luyện, đánh giá so sánh, trực quan hóa attention đến **Giao diện Web tương tác (Flask Web App)** và **Công cụ dòng lệnh CLI** phục vụ thử nghiệm thực tế.
+
 ---
 
 ## 📌 Điểm Nổi Bật Của Dự Án
@@ -16,6 +18,7 @@ Nghiên cứu và so sánh thực nghiệm toàn diện giữa mô hình mạng 
 - **Kiến trúc BiLSTM + Attention (tự huấn luyện)**: Xây dựng từ đầu với 2 tầng BiLSTM và cơ chế Additive Attention (Bahdanau-style), trích xuất trọng số $\alpha_t$ để trực quan hóa mức độ quan tâm của mô hình.
 - **PhoBERT Fine-tuning**: Tinh chỉnh mô hình Transformer 135M tham số của VinAI Research với Linear Warmup Scheduler và AdamW.
 - **Trực quan hóa Attention trực quan**: Biểu đồ Heatmap thể hiện rõ từ ngữ nào đóng vai trò quyết định cảm xúc (từ khóa tích cực, tiêu cực, hoặc liên từ tương phản *"nhưng"*).
+- **Web Demo & CLI Inference**: Trải nghiệm phân tích trực quan ngay trên trình duyệt hoặc qua cửa sổ dòng lệnh.
 - **So sánh đa chiều**: Đánh giá không chỉ về độ chính xác (Accuracy, F1-macro) mà còn cả tài nguyên phần cứng (tham số, dung lượng file, thời gian huấn luyện, độ trễ suy luận).
 
 ---
@@ -76,9 +79,10 @@ Cơ chế Attention trong BiLSTM cho phép giải thích rõ ràng quyết đị
 
 ---
 
-## 📁 Cấu Trúc Thư Mục
+## 📁 Cấu Trúc Thư Mục Dự Án
 
 ```
+vietnamese-sentiment-analysis-bilstm-phobert/
 ├── data/
 │   ├── download_data.py          # Tải và làm sạch tập dữ liệu UIT-VSFC
 │   ├── UIT-VSFC_train.csv        # 11,426 câu huấn luyện
@@ -87,6 +91,7 @@ Cơ chế Attention trong BiLSTM cho phép giải thích rõ ràng quyết đị
 ├── src/
 │   ├── preprocessor.py           # Chuẩn hóa Unicode NFC, teencode, tách từ PyVi
 │   ├── dataset.py                # PyTorch Dataset, Vocabulary, Dataloader
+│   ├── utils.py                  # Seed, logging, class weights
 │   ├── models/
 │   │   ├── bilstm_attention.py   # Mô hình BiLSTM + Word Attention
 │   │   └── phobert_model.py      # Wrapper phân loại PhoBERT
@@ -94,12 +99,19 @@ Cơ chế Attention trong BiLSTM cho phép giải thích rõ ràng quyết đị
 │   ├── train_phobert.py          # Fine-tune PhoBERT
 │   ├── visualize_attention.py    # Trích xuất và vẽ Heatmap Attention
 │   └── evaluate_and_compare.py   # Đánh giá Accuracy, F1, Latency, Resource
+├── templates/
+│   └── index.html                # Giao diện Web tương tác hiện đại
 ├── outputs/
 │   ├── figures/                  # Biểu đồ Attention, Confusion Matrix, So sánh
 │   ├── models/                   # Trọng số mô hình và từ điển vocab.json
 │   └── benchmark_results.json    # Kết quả benchmark chi tiết
+├── app.py                        # Web App demo trực quan (Flask)
+├── predict.py                    # Công cụ dòng lệnh CLI dự đoán cảm xúc
+├── config.py                     # Cấu hình tập trung toàn bộ dự án
+├── run_all.py                    # Chạy toàn bộ pipeline tự động
 ├── requirements.txt              # Danh sách thư viện phụ thuộc
-├── run_all.py                    # Chạy toàn bộ pipeline một lệnh duy nhất
+├── CONTRIBUTING.md               # Hướng dẫn đóng góp mã nguồn
+├── LICENSE                       # Giấy phép mã nguồn mở MIT
 └── README.md
 ```
 
@@ -107,32 +119,32 @@ Cơ chế Attention trong BiLSTM cho phép giải thích rõ ràng quyết đị
 
 ## 🚀 Hướng Dẫn Sử Dụng
 
-### 1. Cài đặt thư viện:
+### 1. Cài đặt môi trường:
 ```bash
+git clone https://github.com/XuanTu138960/vietnamese-sentiment-analysis-bilstm-phobert.git
+cd vietnamese-sentiment-analysis-bilstm-phobert
 pip install -r requirements.txt
 ```
 
-### 2. Chạy toàn bộ pipeline (Tải data -> Train BiLSTM -> Fine-tune PhoBERT -> Visualize -> Evaluate):
+### 2. Trải nghiệm Giao diện Web Demo (Khuyên dùng):
+Khởi chạy ứng dụng Web cục bộ:
 ```bash
-python run_all.py
+python app.py
+```
+Mở trình duyệt truy cập: `http://localhost:5000` để gõ thử nhận xét, xem kết quả dự đoán và Heatmap Attention tương tác theo thời gian thực!
+
+### 3. Dự đoán nhanh qua dòng lệnh (CLI):
+```bash
+# Dự đoán một câu cụ thể
+python predict.py --text "thầy dạy rất nhiệt tình nhưng bài tập hơi khó"
+
+# Chế độ tương tác nhập liên tục từ bàn phím
+python predict.py --interactive
 ```
 
-### 3. Hoặc chạy từng module riêng lẻ:
+### 4. Huấn luyện lại từ đầu & Đánh giá toàn bộ pipeline:
 ```bash
-# Bước 1: Chuẩn bị dữ liệu
-python data/download_data.py
-
-# Bước 2: Huấn luyện BiLSTM + Attention
-python src/train_bilstm.py
-
-# Bước 3: Fine-tune PhoBERT
-python src/train_phobert.py
-
-# Bước 4: Trực quan hóa trọng số Attention
-python src/visualize_attention.py
-
-# Bước 5: Đánh giá và xuất bảng so sánh
-python src/evaluate_and_compare.py
+python run_all.py
 ```
 
 ---
