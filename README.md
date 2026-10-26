@@ -88,10 +88,15 @@ vietnamese-sentiment-analysis-bilstm-phobert/
 │   ├── UIT-VSFC_train.csv        # 11,426 câu huấn luyện
 │   ├── UIT-VSFC_valid.csv        # 1,583 câu kiểm định
 │   └── UIT-VSFC_test.csv         # 3,166 câu kiểm thử
+├── docs/
+│   └── BAO_CAO_BAI_TAP_LON.md    # Báo cáo học thuật toàn diện theo cấu trúc chuẩn
+├── notebooks/
+│   └── Vietnamese_Sentiment_Analysis.ipynb # Jupyter Notebook trực quan từng bước
 ├── src/
 │   ├── preprocessor.py           # Chuẩn hóa Unicode NFC, teencode, tách từ PyVi
 │   ├── dataset.py                # PyTorch Dataset, Vocabulary, Dataloader
 │   ├── utils.py                  # Seed, logging, class weights
+│   ├── plot_training_curves.py   # Vẽ đồ thị Loss & Accuracy qua các Epoch
 │   ├── models/
 │   │   ├── bilstm_attention.py   # Mô hình BiLSTM + Word Attention
 │   │   └── phobert_model.py      # Wrapper phân loại PhoBERT
@@ -102,7 +107,7 @@ vietnamese-sentiment-analysis-bilstm-phobert/
 ├── templates/
 │   └── index.html                # Giao diện Web tương tác hiện đại
 ├── outputs/
-│   ├── figures/                  # Biểu đồ Attention, Confusion Matrix, So sánh
+│   ├── figures/                  # Biểu đồ Attention, Confusion Matrix, Training Curves
 │   ├── models/                   # Trọng số mô hình và từ điển vocab.json
 │   └── benchmark_results.json    # Kết quả benchmark chi tiết
 ├── app.py                        # Web App demo trực quan (Flask)
