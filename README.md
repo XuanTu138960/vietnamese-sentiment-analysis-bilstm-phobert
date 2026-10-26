@@ -12,7 +12,7 @@ Dự án cung cấp trọn gói từ khâu tiền xử lý tiếng Việt, huấ
 
 ---
 
-## 📌 Điểm Nổi Bật Của Dự Án
+##  Điểm Nổi Bật Của Dự Án
 
 - **Tiền xử lý tiếng Việt chuyên sâu**: Chuẩn hóa Unicode NFC, xử lý teencode/viết tắt học đường (`ko`, `btvn`, `gv`, `sv`, `okie`...), chuẩn hóa ký tự lặp kéo dài, tách từ ghép tiếng Việt bằng `PyVi`.
 - **Kiến trúc BiLSTM + Attention (tự huấn luyện)**: Xây dựng từ đầu với 2 tầng BiLSTM và cơ chế Additive Attention (Bahdanau-style), trích xuất trọng số $\alpha_t$ để trực quan hóa mức độ quan tâm của mô hình.
@@ -23,7 +23,7 @@ Dự án cung cấp trọn gói từ khâu tiền xử lý tiếng Việt, huấ
 
 ---
 
-## 📊 Kết Quả So Sánh Thực Nghiệm (Tập Test: 3,166 Mẫu)
+##  Kết Quả So Sánh Thực Nghiệm (Tập Test: 3,166 Mẫu)
 
 | Tiêu chí so sánh | BiLSTM + Attention | PhoBERT-base v2 (Fine-tune) | Nhận xét so sánh |
 | :--- | :---: | :---: | :--- |
@@ -38,11 +38,11 @@ Dự án cung cấp trọn gói từ khâu tiền xử lý tiếng Việt, huấ
 | **Độ trễ suy luận (CPU Latency)** | **1.79 ms / mẫu** | **43.67 ms / mẫu** | **BiLSTM nhanh hơn 24.4 lần** |
 | **Tốc độ thông lượng** | **558.3 mẫu / giây** | **22.9 mẫu / giây** | Phục vụ Real-time vs Batch Processing |
 
-### 📈 Biểu đồ so sánh hiệu năng và tài nguyên
+###  Biểu đồ so sánh hiệu năng và tài nguyên
 
 ![So sánh hiệu năng](outputs/figures/model_comparison_chart.png)
 
-### 🧩 Ma trận nhầm lẫn (Confusion Matrix)
+###  Ma trận nhầm lẫn (Confusion Matrix)
 
 | BiLSTM + Attention | PhoBERT Fine-tune |
 | :---: | :---: |
@@ -50,7 +50,7 @@ Dự án cung cấp trọn gói từ khâu tiền xử lý tiếng Việt, huấ
 
 ---
 
-## 🔍 Trực Quan Hóa Trọng Số Attention
+##  Trực Quan Hóa Trọng Số Attention
 
 Cơ chế Attention trong BiLSTM cho phép giải thích rõ ràng quyết định của mô hình thông qua phân phối trọng số $\alpha_t$:
 
@@ -64,7 +64,7 @@ Cơ chế Attention trong BiLSTM cho phép giải thích rõ ràng quyết đị
 
 ---
 
-## 💡 Đánh Giá Chuyên Sâu: Khi Nào Cần Mô Hình Tiền Huấn Luyện?
+##  Đánh Giá Chuyên Sâu: Khi Nào Cần Mô Hình Tiền Huấn Luyện?
 
 1. **Nên chọn PhoBERT / ViSoBERT / ViDeBERTa khi**:
    - Cần độ chính xác tối đa trong các hệ thống phân tích ý kiến quy mô lớn (Social Listening, brand monitoring).
@@ -79,7 +79,7 @@ Cơ chế Attention trong BiLSTM cho phép giải thích rõ ràng quyết đị
 
 ---
 
-## 📁 Cấu Trúc Thư Mục Dự Án
+##  Cấu Trúc Thư Mục Dự Án
 
 ```
 vietnamese-sentiment-analysis-bilstm-phobert/
@@ -117,7 +117,7 @@ vietnamese-sentiment-analysis-bilstm-phobert/
 
 ---
 
-## 🚀 Hướng Dẫn Sử Dụng
+##  Hướng Dẫn Sử Dụng
 
 ### 1. Cài đặt môi trường:
 ```bash
@@ -149,7 +149,7 @@ python run_all.py
 
 ---
 
-## 📚 Tài Liệu Tham Khảo
+##  Tài Liệu Tham Khảo
 
 - **PhoBERT**: Dat Quoc Nguyen and Anh Tuan Nguyen. *PhoBERT: Pre-trained language models for Vietnamese*. Findings of EMNLP 2020.
 - **UIT-VSFC**: Kiet Van Nguyen, Vu Duc Nguyen, Phu Xuan-Vinh Nguyen, Tham Thi-Hong Truong, Ngan Luu-Thuy Nguyen. *UIT-VSFC: Vietnamese Students' Feedback Corpus for Sentiment Analysis*. KSE 2018.
