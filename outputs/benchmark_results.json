@@ -1,0 +1,90 @@
+{
+  "comparison_table": [
+    {
+      "Mô hình": "BiLSTM + Attention",
+      "Accuracy (%)": 89.86,
+      "Macro F1 (%)": 71.67,
+      "Tham số (Triệu)": 0.973,
+      "Kích thước file (MB)": 11.16,
+      "Thời gian huấn luyện (giây)": 111.1,
+      "Độ trễ suy luận (ms/mẫu)": 1.79,
+      "Tốc độ suy luận (mẫu/giây)": 558.3
+    },
+    {
+      "Mô hình": "PhoBERT-base v2 (Fine-tune)",
+      "Accuracy (%)": 91.38,
+      "Macro F1 (%)": 62.57,
+      "Tham số (Triệu)": 135.0,
+      "Kích thước file (MB)": 515.07,
+      "Thời gian huấn luyện (giây)": 810.9,
+      "Độ trễ suy luận (ms/mẫu)": 43.67,
+      "Tốc độ suy luận (mẫu/giây)": 22.9
+    }
+  ],
+  "bilstm_classification_report": {
+    "negative": {
+      "precision": 0.9070247933884298,
+      "recall": 0.9347054648687012,
+      "f1-score": 0.9206571128975882,
+      "support": 1409.0
+    },
+    "neutral": {
+      "precision": 0.5373134328358209,
+      "recall": 0.2155688622754491,
+      "f1-score": 0.3076923076923077,
+      "support": 167.0
+    },
+    "positive": {
+      "precision": 0.9058894960534305,
+      "recall": 0.9383647798742139,
+      "f1-score": 0.9218412109978376,
+      "support": 1590.0
+    },
+    "accuracy": 0.8986102337334175,
+    "macro avg": {
+      "precision": 0.783409240759227,
+      "recall": 0.696213035672788,
+      "f1-score": 0.7167302105292445,
+      "support": 3166.0
+    },
+    "weighted avg": {
+      "precision": 0.8869531193597077,
+      "recall": 0.8986102337334175,
+      "f1-score": 0.8889191449601639,
+      "support": 3166.0
+    }
+  },
+  "phobert_classification_report": {
+    "negative": {
+      "precision": 0.9082446808510638,
+      "recall": 0.9694819020581973,
+      "f1-score": 0.9378647442499142,
+      "support": 1409.0
+    },
+    "neutral": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1-score": 0.0,
+      "support": 167.0
+    },
+    "positive": {
+      "precision": 0.9187725631768953,
+      "recall": 0.960377358490566,
+      "f1-score": 0.9391143911439115,
+      "support": 1590.0
+    },
+    "accuracy": 0.9137713202779533,
+    "macro avg": {
+      "precision": 0.6090057480093197,
+      "recall": 0.6432864201829211,
+      "f1-score": 0.6256597117979419,
+      "support": 3166.0
+    },
+    "weighted avg": {
+      "precision": 0.8656238568447291,
+      "recall": 0.9137713202779533,
+      "f1-score": 0.8890218908929084,
+      "support": 3166.0
+    }
+  }
+}

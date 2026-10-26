@@ -1,0 +1,26 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# PyTorch large model checkpoints (>100MB cannot be pushed to GitHub)
+outputs/models/*.pt
+outputs/models/*.bin
+*.safetensors
+
+# Environments
+.env
+.venv
+env/
+venv/
+ENV/
+
+# IDE / Editor settings
+.idea/
+.vscode/
+*.sublime-project
+*.sublime-workspace
+
+# OS files
+.DS_Store
+Thumbs.db
